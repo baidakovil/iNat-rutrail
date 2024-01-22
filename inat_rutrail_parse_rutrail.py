@@ -7,8 +7,8 @@ import transliterate
 from bs4 import BeautifulSoup, NavigableString
 
 output_folder = 'rutrail'
-start_trail = 12
-end_trail = 27
+start_trail = 88
+end_trail = 121
 
 
 def transliterate_cyrillic(text):
@@ -79,12 +79,15 @@ def save_gpx_file(response, url, folder_name):
 
 
 def download_pdf(response, folder_name):
-    soup = BeautifulSoup(response.content, 'html.parser')
-    pdf_link = soup.find_all('div', class_='trail_map_button')[1].a['href']
-    pdf_response = requests.get('https://rutrail.org' + pdf_link)
-    pdf_filename = pdf_link.split('/')[-1][:-3]
-    with open(os.path.join(folder_name, pdf_filename), "wb") as file:
-        file.write(pdf_response.content)
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        pdf_link = soup.find_all('div', class_='trail_map_button')[1].a['href']
+        pdf_response = requests.get('https://rutrail.org' + pdf_link)
+        pdf_filename = pdf_link.split('/')[-1][:-3]
+        with open(os.path.join(folder_name, pdf_filename), "wb") as file:
+            file.write(pdf_response.content)
+    except:
+        print('WARNING: Problem when downloading pdf')
 
 
 def save_descr_text(response, folder_name):
