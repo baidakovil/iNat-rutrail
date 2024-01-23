@@ -17,8 +17,50 @@ end_folder = 121
 buffer = 850
 buffer_clean = 150
 empty_file_path = 'assets/Empty.kml'
+track_clean_factor = 2
+circle_close_factor = 0.05
 
 dict_remove_solutions = {73: [2, 3, 4]}
+dict_roll_solutions = {58: {1: -10, 2: 3}, 55: {1: 8, 2: 7}}
+
+
+def roll_solutions(track_file_paths, solutions):
+    def roll_elements(lst, roll):
+        n = len(lst)
+        roll = roll % n
+        return lst[-roll:] + lst[:-roll]
+
+    def point_on_line(
+        point1: List[float], point2: List[float], distance_fraction: float
+    ):
+        x1, y1 = point1
+        x2, y2 = point2
+        dx = x2 - x1
+        dy = y2 - y1
+        length = ((dx**2) + (dy**2)) ** 0.5
+        L = length * distance_fraction
+        x = x1 + (dx / length) * L
+        y = y1 + (dy / length) * L
+        return x, y
+
+    def append_first_to_end(solution):
+        solution.append(point_on_line(solution[0], solution[-1], circle_close_factor))
+        return solution
+
+    track_no = int(track_file_paths[0].split('/')[-2])
+
+    if track_no in dict_roll_solutions:
+        roll_solutions_dict = dict_roll_solutions.get(track_no, {})
+        rolled_solutions = []
+        for i, solution in enumerate(solutions):
+            roll = roll_solutions_dict.get(i + 1, 0)
+            if roll:
+                solution = roll_elements(solution, roll)
+            solution = append_first_to_end(solution)
+            rolled_solutions.append(solution)
+        return rolled_solutions
+    else:
+        return solutions
 
 
 def meters_to_mercator_units(buffer: float, coordinates_latlon: List[Tuple]) -> float:
@@ -199,7 +241,7 @@ def plot_track(
         os.path.dirname(track_file_paths[0]).split('/')[-1]
         + '_'
         + str(buffer)
-        + '_2x_buff.pdf'
+        + '_buff.pdf'
     )
     print('Saving plot to:', plot_name)
     plt.savefig(os.path.join(output_folder, plot_name), dpi=300, bbox_inches='tight')
@@ -417,7 +459,11 @@ def process_track(
 
     # coord_list_merc_sim = coord_list_merc
     # coord_list_latlon_sim = coord_list_latlon
-    coord_list_merc_sim = simplify_tracks(coord_list_merc, buffer_clean_merc * 2)
+
+    # Simplify the track using the Ramer-Douglas-Peucker algorithm
+    coord_list_merc_sim = simplify_tracks(
+        coord_list_merc, buffer_clean_merc * track_clean_factor
+    )
     coord_list_latlon_sim = latlon_to(coord_list_merc_sim, inverse=True)
 
     print(f'Buffer: {buffer}, buffer_clean: {buffer_clean}')
@@ -426,8 +472,11 @@ def process_track(
         coord_list_merc_sim, buffer_merc, buffer_clean
     )
 
+    # Roll the solution as described in the special dict
+    solutions_merc_sim_rolled = roll_solutions(track_file_paths, solutions_merc_sim)
+
     # Convert the solution from Mercator coordinates back to latitude and longitude
-    solutions_latlon_sim = latlon_to(solutions_merc_sim, inverse=True)
+    solutions_latlon_sim = latlon_to(solutions_merc_sim_rolled, inverse=True)
 
     coord_list_latlon_sim.extend(coord_list_latlon)
     # Plot the track
