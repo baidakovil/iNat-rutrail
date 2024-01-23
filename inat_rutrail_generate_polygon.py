@@ -1,5 +1,6 @@
 """This file contain program for generating buffer polygon for gps track in KML file."""
 
+import math
 import os
 import re
 from typing import List, Tuple
@@ -198,7 +199,7 @@ def plot_track(
         os.path.dirname(track_file_paths[0]).split('/')[-1]
         + '_'
         + str(buffer)
-        + '_buff.pdf'
+        + '_2x_buff.pdf'
     )
     print('Saving plot to:', plot_name)
     plt.savefig(os.path.join(output_folder, plot_name), dpi=300, bbox_inches='tight')
@@ -332,6 +333,65 @@ def latlon_to(
     return coord_list
 
 
+def distance(a, b, c):
+    """Calculate the perpendicular distance from point c to the line segment ab."""
+    ax, ay = a
+    bx, by = b
+    cx, cy = c
+
+    dx = bx - ax
+    dy = by - ay
+
+    if dx == dy == 0:  # The points are the same.
+        return math.hypot(cx - ax, cy - ay)
+
+    t = ((cx - ax) * dx + (cy - ay) * dy) / (dx * dx + dy * dy)
+
+    if t < 0:  # Point c is outside the line segment, closer to point a.
+        dx = cx - ax
+        dy = cy - ay
+    elif t > 1:  # Point c is outside the line segment, closer to point b.
+        dx = cx - bx
+        dy = cy - by
+    else:  # Point c is inside the line segment.
+        near_x = ax + t * dx
+        near_y = ay + t * dy
+        dx = cx - near_x
+        dy = cy - near_y
+
+    return math.hypot(dx, dy)
+
+
+def simplify_track(track, delta):
+    """Simplify a track using the Ramer-Douglas-Peucker algorithm."""
+    if len(track) < 3:
+        return track
+
+    # Find the point in the track that is furthest from the line segment formed by the first and last points.
+    max_dist = 0.0
+    max_index = 0
+    for i in range(1, len(track) - 1):
+        dist = distance(track[0], track[-1], track[i])
+        if dist > max_dist:
+            max_dist = dist
+            max_index = i
+
+    # If the maximum distance is greater than delta, split the track into two at this point and simplify each half.
+    if max_dist > delta:
+        return simplify_track(track[: max_index + 1], delta)[:-1] + simplify_track(
+            track[max_index:], delta
+        )
+
+    # Otherwise, all points between the first and last are discarded.
+    else:
+        return [track[0], track[-1]]
+
+
+def simplify_tracks(tracks, delta):
+    """Simplify a list of tracks."""
+    return [simplify_track(track, delta) for track in tracks]
+
+
 def process_track(
     track_file_paths: List[str], buffer: int, buffer_clean: int, empty_file_path: str
 ) -> None:
@@ -350,22 +410,36 @@ def process_track(
 
     # Convert the buffer from meters to Mercator units
     buffer_merc = meters_to_mercator_units(buffer, coord_list_latlon[0])
+    buffer_clean_merc = meters_to_mercator_units(buffer_clean, coord_list_latlon[0])
 
     # Convert the coordinates from latitude and longitude to Mercator coordinates
     coord_list_merc = latlon_to(coord_list_latlon)
 
+    # coord_list_merc_sim = coord_list_merc
+    # coord_list_latlon_sim = coord_list_latlon
+    coord_list_merc_sim = simplify_tracks(coord_list_merc, buffer_clean_merc * 2)
+    coord_list_latlon_sim = latlon_to(coord_list_merc_sim, inverse=True)
+
     print(f'Buffer: {buffer}, buffer_clean: {buffer_clean}')
     # Create a buffer track using the Mercator coordinates and buffer in Mercator units
-    solutions_merc = create_buffer_track(coord_list_merc, buffer_merc, buffer_clean)
+    solutions_merc_sim = create_buffer_track(
+        coord_list_merc_sim, buffer_merc, buffer_clean
+    )
 
     # Convert the solution from Mercator coordinates back to latitude and longitude
-    solutions_latlon = latlon_to(solutions_merc, inverse=True)
+    solutions_latlon_sim = latlon_to(solutions_merc_sim, inverse=True)
 
+    coord_list_latlon_sim.extend(coord_list_latlon)
     # Plot the track
-    plot_track(solutions_latlon, coord_list_latlon, track_file_paths, buffer)
+    plot_track(
+        sol_list=solutions_latlon_sim,
+        coord_list=coord_list_latlon_sim,
+        track_file_paths=track_file_paths,
+        buffer=buffer,
+    )
 
     # Convert the solution in latitude and longitude to a string for insert in KML file
-    solution_latlon_string = tracks_to_string(solutions_latlon, track_file_paths)
+    solution_latlon_string = tracks_to_string(solutions_latlon_sim, track_file_paths)
 
     # Insert the solution string after the coordinates in the track file and save it
     save_kml(
