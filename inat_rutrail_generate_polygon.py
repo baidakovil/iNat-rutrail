@@ -10,14 +10,14 @@ import pyclipper
 import pyproj
 
 storing_folder = './rutrail/'
-start_folder = 73
-end_folder = 73
+start_folder = 12
+end_folder = 121
 
-buffer = 300
-buffer_clean = 50
+buffer = 850
+buffer_clean = 150
 empty_file_path = 'assets/Empty.kml'
 
-dict_remove_solutions = {73: [2, 3]}
+dict_remove_solutions = {73: [2, 3, 4]}
 
 
 def meters_to_mercator_units(buffer: float, coordinates_latlon: List[Tuple]) -> float:
@@ -47,7 +47,11 @@ def meters_to_mercator_units(buffer: float, coordinates_latlon: List[Tuple]) -> 
     return distance_mercator_units
 
 
-def read_kml_file(file_paths: List[str]) -> List[List[Tuple]]:
+import re
+from typing import List, Tuple
+
+
+def read_kml_file(file_paths: List[str]) -> List[List[Tuple[float, float]]]:
     """
     Reads a KML file and extracts coordinate data.
 
@@ -58,35 +62,30 @@ def read_kml_file(file_paths: List[str]) -> List[List[Tuple]]:
     - a list of lists with coordinate pairs.
     """
     coord_list = []
-    coordinates = []
+
     for file_path in file_paths:
         with open(file_path, 'r') as file:
             file_data = file.read()
 
-            if file_path[-4:] == '.kml':
-                coordinates_data = re.search(
+            if file_path.endswith('.kml'):
+                coordinates_data = re.findall(
                     r'<coordinates>(.*?)</coordinates>', file_data, re.DOTALL
                 )
-                if coordinates_data:
+                for data in coordinates_data:
                     coordinates = [
                         tuple(map(float, coord.split(',')))
-                        for coord in coordinates_data.group(1).strip().split('\n')
+                        for coord in data.strip().split('\n')
                     ]
+                    coord_list.append(coordinates)
 
-            elif file_path[-4:] == '.gpx':
+            elif file_path.endswith('.gpx'):
                 coordinates_data = re.findall(
-                    r'<trkpt lat="(.*?)" lon="(.*?)"', file_data
+                    r'<trkseg>(.*?)</trkseg>', file_data, re.DOTALL
                 )
-                coordinates = [
-                    (float(lat), float(lon)) for lon, lat in coordinates_data
-                ]
-            if coordinates:
-                print('*' * 10)
-                print(f'File: {file_path}')
-                print(f'Total coordinate pairs: {len(coordinates)}')
-                print(f'Sample of coordinates:', coordinates[:1])
-                print('*' * 10)
-                coord_list += [coordinates]
+                for data in coordinates_data:
+                    coordinates = re.findall(r'<trkpt lat="(.*?)" lon="(.*?)"', data)
+                    coordinates = [(float(lat), float(lon)) for lon, lat in coordinates]
+                    coord_list.append(coordinates)
     return coord_list
 
 
@@ -132,6 +131,7 @@ def plot_track(
     sol_list: List[List[Tuple]],
     coord_list: List[List[Tuple]],
     track_file_paths: List[str],
+    buffer,
 ) -> None:
     """
     Plot the track by overlaying the original coordinates and the solution coordinates.
@@ -147,20 +147,29 @@ def plot_track(
     track_no = track_file_paths[0].split('/')[-2]
     remove_solutions = dict_remove_solutions.get(int(track_no), [])
     set_coord = pd.DataFrame()
+    inner_tracks_count = 0
     for i, coord in enumerate(coord_list):
         lat_orig, lon_orig = zip(*coord)
+        try:
+            data_class = (
+                f'Original track (file): {os.path.basename(track_file_paths[i])}'
+            )
+        except IndexError:
+            inner_tracks_count += 1
+            data_class = f'Original track (inner): {inner_tracks_count}'
         set_coord_temp = pd.DataFrame(
             {
                 'lat': lat_orig,
                 'lon': lon_orig,
-                'data_class': f'Original: {os.path.basename(track_file_paths[i])}',
+                'data_class': data_class,
+                'remove_solutions': 0,
             }
         )
         set_coord = pd.concat([set_coord, set_coord_temp])
 
     set_sol = pd.DataFrame()
     for i, sol in enumerate(sol_list):
-        if (len(sol) == 0) or (i + 1 in remove_solutions):
+        if len(sol) == 0:
             continue
         lat_sol, lon_sol = zip(*sol)
         set_sol_temp = pd.DataFrame(
@@ -168,6 +177,7 @@ def plot_track(
                 'lat': lat_sol,
                 'lon': lon_sol,
                 'data_class': f'Solution #{i+1}',
+                'remove_solutions': 1 if i + 1 in remove_solutions else 0,
             }
         )
         set_sol = pd.concat([set_sol, set_sol_temp])
@@ -175,14 +185,21 @@ def plot_track(
     data = pd.concat([set_coord, set_sol])
     fig, ax = plt.subplots(figsize=(50, 50))
     for _, group in data.groupby('data_class'):
+        linestyle = 'dotted' if (group['remove_solutions'] == 1).any() else 'solid'
         ax.plot(
             group['lat'],
             group['lon'],
             marker='o',
             label=group['data_class'].unique()[0],
+            linestyle=linestyle,
         )
     ax.legend()
-    plot_name = os.path.dirname(track_file_paths[0]).split('/')[-1] + '_buff.pdf'
+    plot_name = (
+        os.path.dirname(track_file_paths[0]).split('/')[-1]
+        + '_'
+        + str(buffer)
+        + '_buff.pdf'
+    )
     print('Saving plot to:', plot_name)
     plt.savefig(os.path.join(output_folder, plot_name), dpi=300, bbox_inches='tight')
     # mplleaflet.show(fig=ax.figure)
@@ -190,7 +207,10 @@ def plot_track(
     print('*' * 10)
 
 
-def tracks_to_string(tracks: List[List[Tuple]]) -> str:
+def tracks_to_string(
+    tracks: List[List[Tuple]],
+    track_file_paths: List[str],
+) -> str:
     """
     Convert a list of (x, y) points to a string representation.
     Args:
@@ -198,12 +218,18 @@ def tracks_to_string(tracks: List[List[Tuple]]) -> str:
     Returns:
     - String representation of the track
     """
-    return '\n'.join(
-        [
-            '\n'.join([f'              {point[0]},{point[1]},0' for point in track])
-            for track in tracks
-        ]
-    )
+    track_no = track_file_paths[0].split('/')[-2]
+    remove_solutions = dict_remove_solutions.get(int(track_no), [])
+    solutions = []
+    for i, track in enumerate(tracks):
+        if len(track) == 0:
+            continue
+        if i + 1 not in remove_solutions:
+            solutions.append(
+                '\n'.join([f'              {point[0]},{point[1]},0' for point in track])
+            )
+
+    return '\n'.join(solutions)
 
 
 def save_kml(
@@ -228,7 +254,11 @@ def save_kml(
         [os.path.basename(track_file_path) for track_file_path in track_file_paths]
     )
     new_file_path = os.path.join(
-        output_folder, os.path.dirname(track_file_paths[0]).split('/')[-1] + '_buff.kml'
+        output_folder,
+        os.path.dirname(track_file_paths[0]).split('/')[-1]
+        + '_'
+        + str(buffer)
+        + '_buff.kml',
     )
     placemark_name = f'Autogenerated from file(s) {file_names_full}\n'
     placemark_description = (
@@ -332,10 +362,10 @@ def process_track(
     solutions_latlon = latlon_to(solutions_merc, inverse=True)
 
     # Plot the track
-    plot_track(solutions_latlon, coord_list_latlon, track_file_paths)
+    plot_track(solutions_latlon, coord_list_latlon, track_file_paths, buffer)
 
     # Convert the solution in latitude and longitude to a string for insert in KML file
-    solution_latlon_string = tracks_to_string(solutions_latlon)
+    solution_latlon_string = tracks_to_string(solutions_latlon, track_file_paths)
 
     # Insert the solution string after the coordinates in the track file and save it
     save_kml(
