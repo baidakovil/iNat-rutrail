@@ -11,8 +11,8 @@ import pyclipper
 import pyproj
 
 storing_folder = './rutrail/'
-start_folder = 12
-end_folder = 121
+start_folder = 118
+end_folder = 118
 
 buffer = 850
 buffer_clean = 150
@@ -20,8 +20,23 @@ empty_file_path = 'assets/Empty.kml'
 track_clean_factor = 2
 circle_close_factor = 0.05
 
-dict_remove_solutions = {73: [2, 3, 4]}
-dict_roll_solutions = {58: {1: -10, 2: 3}, 55: {1: 8, 2: 7}}
+dict_remove_solutions = {
+    59: [2],
+    82: [2],
+    85: [2],
+    99: [2],
+    105: [2],
+    111: [2, 3, 4],
+    118: [2],
+}
+
+dict_roll_solutions = {
+    21: {1: 6, 2: -2},
+    55: {1: 8, 2: 7},
+    58: {1: -10, 2: 3},
+    86: {1: 3, 2: -1},
+    117: {2: 2},
+}
 
 
 def roll_solutions(track_file_paths, solutions):
