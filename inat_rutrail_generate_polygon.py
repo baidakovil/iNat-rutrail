@@ -11,8 +11,8 @@ import pyclipper
 import pyproj
 
 storing_folder = './rutrail/'
-start_folder = 118
-end_folder = 118
+start_folder = 12
+end_folder = 121
 
 buffer = 850
 buffer_clean = 150
@@ -278,16 +278,17 @@ def tracks_to_string(
     """
     track_no = track_file_paths[0].split('/')[-2]
     remove_solutions = dict_remove_solutions.get(int(track_no), [])
+    spaces = ' ' * 14
     solutions = []
     for i, track in enumerate(tracks):
         if len(track) == 0:
             continue
         if i + 1 not in remove_solutions:
             solutions.append(
-                '\n'.join([f'              {point[0]},{point[1]},0' for point in track])
+                '\n'.join([f'{spaces}{point[0]},{point[1]},0' for point in track])
             )
-
-    return '\n'.join(solutions)
+    first_point = f'{spaces}{tracks[0][0][0]},{tracks[0][0][1]},0'
+    return '\n'.join(solutions) + '\n' + first_point
 
 
 def save_kml(
@@ -471,9 +472,6 @@ def process_track(
 
     # Convert the coordinates from latitude and longitude to Mercator coordinates
     coord_list_merc = latlon_to(coord_list_latlon)
-
-    # coord_list_merc_sim = coord_list_merc
-    # coord_list_latlon_sim = coord_list_latlon
 
     # Simplify the track using the Ramer-Douglas-Peucker algorithm
     coord_list_merc_sim = simplify_tracks(

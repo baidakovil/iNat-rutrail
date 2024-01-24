@@ -7,7 +7,7 @@ import transliterate
 from bs4 import BeautifulSoup, NavigableString
 
 output_folder = 'rutrail'
-start_trail = 88
+start_trail = 121
 end_trail = 121
 
 

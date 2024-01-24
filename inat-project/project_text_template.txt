@@ -1,0 +1,15 @@
+Наблюдения вокруг туристической тропы <i>TRAIL_NAME_RUS</i>, [одного из маршрутов](TRAIL_URL) проекта <i>RuTrail — Маркированные маршруты России</i>. 
+
+Сюда попадают все наблюдения, включая «Обыкновенные», на расстоянии ~1 км от тропы. Список всех подобных проектов смотрите в [объединяющем проекте](https://www.inaturalist.org/projects/rutrail-013aac38-8df3-4c23-a690-b2b2be7955f1).
+
+О маршруте. 
+TRAIL_REGION_RUS. TRAIL_DESC_RUS
+<hr>
+
+Here are observations around the tourist trail <b>TRAIL_NAME_TRANSLIT</b> (eng.  <b>TRAIL_NAME_ENG</b>), [one of the routes](TRAIL_URL) of the project  <b>RuTrail — Marked routes of Russia</b>. 
+
+All observations, including «Casual» ones, at a distance of ~1 km from the trail are included here. For a list of all related projects, see [umbrella project](https://www.inaturalist.org/projects/rutrail-013aac38-8df3-4c23-a690-b2b2be7955f1).
+
+About the route.
+TRAIL_REGION_ENG. TRAIL_DESC_ENG
+<hr>

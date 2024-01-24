@@ -4,20 +4,25 @@ import re
 import transliterate
 from PIL import Image, ImageDraw, ImageFont
 
-start_folder = 70
+start_folder = 1
 end_folder = 121
-
+umbrella_text = ['inat', 'ru', 'trail']
 
 source_logo_folder = './inat-project/logo/'
 storing_folder = './rutrail/'
 font_path = os.path.join(source_logo_folder, 'FreeMonoOblique.ttf')
 white_bg_path = os.path.join(source_logo_folder, 'rutrail-logo-background.png')
-ducktrails_path = os.path.join(source_logo_folder, 'rutrail-logo-ducktrails.png')
+# white_bg_path = os.path.join(source_logo_folder, 'rutrail-logo-background-183-183.png')
+ducktrails_path = os.path.join(source_logo_folder, 'rutrail-logo-ducktrails_hacky.png')
+# ducktrails_path = os.path.join(source_logo_folder, 'rutrail-logo-rutrail.png')
+
 
 trail_name_file = 'trail_name.txt'
 
 font_size = 450
 text_color = (172, 165, 9)
+umbrella_text_color = (214, 33, 90)
+
 horizontal_offset = 40
 vertical_offset_start = 0
 vertical_offset_step = 500
@@ -69,17 +74,23 @@ def prepare_logos_texts(folder):
 
 def prepare_image(i):
     folder = os.path.join(storing_folder, str(i))
-    text = prepare_logos_texts(folder)
+    text = umbrella_text if i == 1 else prepare_logos_texts(folder)
     background = Image.open(white_bg_path, 'r')
     output_path = os.path.join(folder, f'project_logo_{i}.png')
     if text:
         I1 = ImageDraw.Draw(background)
-        for i, five in enumerate(text):
+        for i_line, five in enumerate(text):
             offset = (
                 horizontal_offset,
-                vertical_offset_start + vertical_offset_step * i,
+                vertical_offset_start + vertical_offset_step * i_line,
             )
-            I1.text(offset, five, font=myFont, fill=text_color, stroke_width=1)
+            I1.text(
+                offset,
+                five,
+                font=myFont,
+                fill=umbrella_text_color if i == 1 else text_color,
+                stroke_width=1,
+            )
         background.paste(duck, (0, 0), mask=duck)
         background.save(output_path)
         print(f'Image saved to {output_path}')
