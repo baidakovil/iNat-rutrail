@@ -35,15 +35,15 @@ There is some features:
 - working with *.gpx of *.kml input files
 - adding several tracks to create polygon. Both adding files or polygons inside single file supported. This functionality mainly provided by Clipper library
 - adjusting distance from track to polygon
-- maintain level of siplicity (distance error) ot the polygon. Two optional steps here: simplification of the track and/or simplification of the polygon
+- maintain level of simplicity (distance error) ot the polygon. Two optional steps here: simplification of the track and/or simplification of the polygon
 - removing unnecessary shape circles from resulting shape
 - "rotating" start/end of resulting polygons, to create circle polygon with single sequence, as iNaturalist supports only these
 - plotting pdfs with both simplificated and original trails
 
 Dependencies:  
-**pyclipper** - Cython wrapper of the Clipper library. Used to create shape around tracks
-**pyproj** - Python interface to PROJ, cartographic projections and coordinate transformations library. Used to translate longitude-lattitude coordinates to Mercator coordinates, where pyclipper will work (lat-lon is not equidistance coordinates)
-**pandas** - used for data manipulations to prepare data to debug plotting
+**pyclipper** - Cython wrapper of the Clipper library. Used to create shape around tracks  
+**pyproj** - Python interface to PROJ, cartographic projections and coordinate transformations library. Used to translate longitude-lattitude coordinates to Mercator coordinates, where pyclipper will work (lat-lon is not equidistance coordinates)  
+**pandas** - used for data manipulations to prepare data to debug plotting  
 **matplotlib** - used to make debug PDF plots
 
 Note: polygon (shape map) of the project [Мончегорские тропы и Ниттис — Маркированный маршрут RuTrail](https://www.inaturalist.org/projects/rutrail-01f33481-7d7b-45e4-833c-33e3cc07312c) is made-by-hand compilation of two other separated tracks (iNaturalist supports several shapes in single kml-file).
@@ -53,7 +53,7 @@ Note: polygon (shape map) of the project [Мончегорские тропы и
 Script to load track information: description, track, banner photo.
 
 Dependencies:  
-**requests** - library to load web-pages
+**requests** - library to load web-pages  
 **bs4** -  beautifulsoup4, library that makes it easy to scrape information from web pages. Used to parse RuTrail web-page
 
 ### inat_rutrail_stamp_banner.py
