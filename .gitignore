@@ -10,6 +10,7 @@ rutrail
 # Working files
 /*.pdf
 /*.kml
+**/done_list.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
