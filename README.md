@@ -12,7 +12,10 @@ How does it look on iNaturalist:
 Link to iNaturalist umbrella project:  
 https://www.inaturalist.org/projects/rutrail-013aac38-8df3-4c23-a690-b2b2be7955f1
 
-## inat-rutrail_prepare_text.py
+
+## Scripts
+
+### inat-rutrail_prepare_text.py
 
 Script to create iNat-project textual descriptions. 
 
@@ -22,7 +25,7 @@ Dependencies:
 
 Note: description of the project [Мончегорские тропы и Ниттис — Маркированный маршрут RuTrail](https://www.inaturalist.org/projects/rutrail-01f33481-7d7b-45e4-833c-33e3cc07312c) is compilation of six others texts.
 
-## inat_rutrail_generate_polygon.py
+### inat_rutrail_generate_polygon.py
 
 Main script to create kml-shapes (polygons) for iNaturalist from gps tracks, provided RuTrail.  
 
@@ -46,20 +49,20 @@ Dependencies:
 Note: polygon (shape map) of the project [Мончегорские тропы и Ниттис — Маркированный маршрут RuTrail](https://www.inaturalist.org/projects/rutrail-01f33481-7d7b-45e4-833c-33e3cc07312c) is made-by-hand compilation of two other separated tracks (iNaturalist supports several shapes in single kml-file).
 
 
-## inat_rutrail_parse_rutrail.py
+### inat_rutrail_parse_rutrail.py
 Script to load track information: description, track, banner photo.
 
 Dependencies:  
 **requests** - library to load web-pages
 **bs4** -  beautifulsoup4, library that makes it easy to scrape information from web pages. Used to parse RuTrail web-page
 
-## inat_rutrail_stamp_banner.py
+### inat_rutrail_stamp_banner.py
 Script to create iNat project banner with RuTrail logo.
 
 Dependencies:  
 **PIL** - Python Imaging Library. Used to crop images and paste rutrail logo on banner photo
 	
-## inat_rutrail_stamp_logo.py
+### inat_rutrail_stamp_logo.py
 Script to create iNat project unique icon with first letters of latin trail name. I found this to be nice.
 
 Dependencies:  
