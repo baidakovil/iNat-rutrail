@@ -6,7 +6,7 @@ Aim of this project is to create 89 iNaturalist project (number at early 2024), 
 Having this, each tourist can see which plants and animals, fungi and lichens it can see on the trail.
 
 How does it look on iNaturalist:  
-<img src="https://github.com/baidakovil/iNat-rutrail/blob/5456d07fc6a6b5d28b06db4110a5b1fbfb1b5c64/assets/readme/route-logo-sample.png" width=72%></img>  
+<img src="https://github.com/baidakovil/iNat-rutrail/blob/5456d07fc6a6b5d28b06db4110a5b1fbfb1b5c64/assets/readme/route-logo-sample.png" width=73%></img>  
 <img src="https://github.com/baidakovil/iNat-rutrail/blob/5456d07fc6a6b5d28b06db4110a5b1fbfb1b5c64/assets/readme/route-map-sample.png" width=75%></img>
 
 Link to iNaturalist umbrella project:  
