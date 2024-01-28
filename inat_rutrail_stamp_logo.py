@@ -10,21 +10,19 @@ umbrella_text = ['inat', 'ru', 'trail']
 
 source_logo_folder = './inat-project/logo/'
 storing_folder = './rutrail/'
-font_path = os.path.join(source_logo_folder, 'FreeMonoOblique.ttf')
+font_path = os.path.join(source_logo_folder, 'UbuntuMono-RI.ttf')
 white_bg_path = os.path.join(source_logo_folder, 'rutrail-logo-background.png')
-# white_bg_path = os.path.join(source_logo_folder, 'rutrail-logo-background-183-183.png')
 ducktrails_path = os.path.join(source_logo_folder, 'rutrail-logo-ducktrails_hacky.png')
-# ducktrails_path = os.path.join(source_logo_folder, 'rutrail-logo-rutrail.png')
 
 
 trail_name_file = 'trail_name.txt'
 
-font_size = 450
+font_size = 535
 text_color = (172, 165, 9)
 umbrella_text_color = (214, 33, 90)
 
-horizontal_offset = 40
-vertical_offset_start = 0
+horizontal_offset = 50
+vertical_offset_start = -40
 vertical_offset_step = 500
 myFont = ImageFont.truetype(font_path, font_size)
 duck = Image.open(ducktrails_path, 'r')
